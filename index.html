@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="am">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EthioTask - ኢትዮ ታስክ</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #f4f7f6; color: #333; }
+        .container { max-width: 500px; margin: 40px auto; background: white; padding: 25px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        h1 { color: #2c3e50; text-align: center; font-size: 24px; margin-bottom: 20px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input { width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; font-size: 16px; }
+        button { width: 100%; padding: 12px; background-color: #27ae60; color: white; font-weight: bold; border: none; border-radius: 4px; font-size: 16px; cursor: pointer; }
+        button:hover { background-color: #219653; }
+        #status-msg { margin-top: 15px; font-weight: bold; text-align: center; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>EthioTask - ዳታቤዝ ማገናኛ</h1>
+        
+        <!-- የተጠቃሚ ምዝገባ እና የሂሳብ መቆጣጠሪያ ቅጽ -->
+        <div class="form-group">
+            <label for="username">የተጠቃሚ ስም (Name)</label>
+            <input type="text" id="username" placeholder="ስምዎን ያስገቡ">
+        </div>
+
+        <div class="form-group">
+            <label for="userbalance">የሂሳብ ቀሪ (Balance - ብር)</label>
+            <input type="number" id="userbalance" placeholder="የሂሳብ መጠን ያስገቡ">
+        </div>
+
+        <button id="save-btn">መረጃውን ወደ ዳታቤዝ ላክ</button>
+        
+        <p id="status-msg"></p>
+    </div>
+
+    <!-- Firebase SDK እና Firestore ማገናኛ ኮድ -->
+    <script type="module">
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/13.3.0/firebase-app.js";
+      import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/13.3.0/firebase-firestore.js";
+
+      // የፋየርቤስ ማዋቀሪያ ቁልፎችዎ
+      const firebaseConfig = {
+        apiKey: "AIzaSyBWeHJ6ltVVIcdfkvgFrOPKsk5EyPmeUM4",
+        authDomain: "ethio-task.firebaseapp.com",
+        projectId: "ethio-task",
+        storageBucket: "ethio-task.firebasestorage.app",
+        messagingSenderId: "931160851854",
+        appId: "1:931160851854:web:ce610da10aaac1d89c90df",
+        measurementId: "G-7DZPTNNHYQ"
+      };
+
+      // ፋየርቤስን ማስጀመር
+      const app = initializeApp(firebaseConfig);
+      const db = getFirestore(app);
+
+      // ቁልፉ ሲጫን መረጃውን ወደ Firestore ዳታቤዝ መመዝገብ
+      document.getElementById('save-btn').addEventListener('click', async () => {
+          const name = document.getElementById('username').value.trim();
+          const balance = document.getElementById('userbalance').value.trim();
+          const statusMsg = document.getElementById('status-msg');
+
+          if (!name || !balance) {
+              statusMsg.style.color = "red";
+              statusMsg.innerText = "እባክዎ ሁለቱንም ባዶ ቦታዎች ይሙሉ!";
+              return;
+          }
+
+          try {
+              // 'users' በሚባል የዳታቤዝ ቴብል (Collection) ውስጥ መረጃውን ማስቀመጥ
+              await addDoc(collection(db, "users"), {
+                  name: name,
+                  balance: Number(balance),
+                  createdAt: new Date()
+              });
+              
+              statusMsg.style.color = "green";
+              statusMsg.innerText = "በተሳካ ሁኔታ ተመዝግቧል!";
+              
+              // ፎርሙን ባዶ ማድረግ
+              document.getElementById('username').value = '';
+              document.getElementById('userbalance').value = '';
+          } catch (e) {
+              console.error("Error adding document: ", e);
+              statusMsg.style.color = "red";
+              statusMsg.innerText = "ስህተት ተፈጥሯል: " + e.message;
+          }
+      });
+    </script>
+</body>
+</html>
